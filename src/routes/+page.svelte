@@ -1,29 +1,24 @@
 <script>
 	/** @type {import('./$types').ActionData} */
 	export let form;
-	let buttonClass;
-	function spin() {
-		buttonClass = 'loading';
-	}
 </script>
 
 <main>
 	<h1>Spinneri</h1>
-	<form>
-		<textarea name="originalText" id="orignalText" cols="30" rows="10" maxlength="100" />
-		<button on:click={spin}><p class={buttonClass}>Spin</p></button>
+	<form method="post">
+		<textarea name="originalText" id="orignalText" cols="30" rows="10" maxlength="250" />
+
+		{#await form}
+			<button disabled><p class="loading">Spin</p></button>
+		{:then formResult}
+			<button type="submit"><p>Spin</p></button>
+			{#if formResult?.result}
+				<p>{formResult.result}</p>
+			{/if}
+		{:catch}
+			<p class="danger">❌ App crashed!!</p>
+		{/await}
 	</form>
-	{#await form}
-		<!-- <p>No value</p> -->
-	{:then formResult}
-		{#if formResult?.result}
-			<p>{formResult.result}</p>
-		{:else}
-			<p class="danger">No result</p>
-		{/if}
-	{:catch}
-		<p class="danger">❌ App crashed!!</p>
-	{/await}
 </main>
 
 <style>
