@@ -26,6 +26,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"cohere-ai": "^5.0.2"
+		"cohere-ai": "^7.14.0"
 	}
 }

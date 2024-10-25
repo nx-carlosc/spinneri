@@ -1,7 +1,11 @@
-import cohere from 'cohere-ai';
 import { COHERE_API_KEY } from '$env/static/private';
+import { CohereClientV2 } from 'cohere-ai';
 
-cohere.init(COHERE_API_KEY);
+const cohere = new CohereClientV2({
+	token: COHERE_API_KEY
+});
+
+const MODEL = 'command-r-plus';
 
 /** @type {import('./$types').Actions} */
 
@@ -13,60 +17,60 @@ export const actions = {
 
 			if (!originalText) return { result: null };
 
-			const translated = await cohere.generate({
-				model: 'medium',
+			const { generations } = await cohere.generate({
+				model: MODEL,
 				prompt: `Translate to english the text: ${originalText}`,
-				max_tokens: 200,
+				maxTokens: 200,
 				temperature: 0.9,
 				k: 0,
 				p: 0.75,
-				frequency_penalty: 0,
-				presence_penalty: 0,
-				stop_sequences: [],
-				return_likelihoods: 'NONE'
+				frequencyPenalty: 0,
+				presencePenalty: 0,
+				stopSequences: [],
+				returnLikelihoods: 'NONE'
 			});
 
-			const translatedText = translated.body?.generations[0]?.text?.replace(/\n/g, '');
+			const translatedText = generations[0]?.text?.replace(/\n/g, '');
 
 			if (translatedText) {
-				const spinned = await cohere.generate({
-					model: 'medium',
+				const { generations } = await cohere.generate({
+					model: MODEL,
 					prompt: `Write a text using other words that means the same as the next text: ${translatedText}`,
-					max_tokens: 200,
-					temperature: 0.9,
+					maxTokens: 200,
+					temperature: 0.2,
 					k: 0,
 					p: 0.75,
-					frequency_penalty: 0,
-					presence_penalty: 0,
-					stop_sequences: [],
-					return_likelihoods: 'NONE'
+					frequencyPenalty: 0,
+					presencePenalty: 0,
+					stopSequences: [],
+					returnLikelihoods: 'NONE'
 				});
 
-				const spinnedText = spinned.body?.generations[0]?.text?.replace(/\n/g, '');
+				const spinnedText = generations[0]?.text?.replace(/\n/g, '');
 
 				if (spinnedText) {
-					const result = await cohere.generate({
-						model: 'medium',
-						prompt: `Translate to spanish the text: ${spinnedText}`,
-						max_tokens: 200,
-						temperature: 0.9,
+					const { generations } = await cohere.generate({
+						model: MODEL,
+						prompt: `Translate to spanish the text: ${spinnedText}. Deliver only the translation without context.`,
+						maxTokens: 200,
+						temperature: 0.7,
 						k: 0,
 						p: 0.75,
-						frequency_penalty: 0,
-						presence_penalty: 0,
-						stop_sequences: [],
-						return_likelihoods: 'NONE'
+						frequencyPenalty: 0,
+						presencePenalty: 0,
+						stopSequences: [],
+						returnLikelihoods: 'NONE'
 					});
 
-					const resultText = result.body?.generations[0]?.text?.replace(/\n/g, '');
+					const resultText = generations[0]?.text?.replace(/\n/g, '');
 
-					return { result: resultText };
+					return { result: resultText, originalText };
 				}
 			}
 			return { result: null };
 		} catch (error) {
 			console.error(error);
-			return { result: null };
+			throw new Error(error);
 		}
 	}
 };
